@@ -38,6 +38,15 @@ public class OpenGUI implements CommandExecutor, Listener {
 		if(!(sender instanceof Player)) {
 			return false;
 		}
+		else if(args.length==1 && args[0].equalsIgnoreCase("help")){
+			Player p = (Player) sender;
+			p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("help.line1")));
+			p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("help.line2")));
+			p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("help.line3")));
+			p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("help.line4")));
+			p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("help.line5")));
+			return false;
+		}
 		else {
 			try {
 				if(System.currentTimeMillis()+main.getConfig().getLong("timeout_hour")*3600000 > main.timeout || main.getConnection().isClosed() || main.getConnection() != null) {

@@ -55,6 +55,12 @@ tuto_edit:
   title: "               §aTUTORIEL:"
   line1: "Cliquez sur un de vos item dans votre inventaire"
   line2: "          pour modifier l'item de votre warp"
+help:
+  line1: "&6=========&cWARP&6========="
+  line2: "&7/bwarp : &eOuvre le menu des warps"
+  line3: "&7/setbwarp <nom> : &eCréer un nouveau warp"
+  line4: "&7/delbwarp <nom> : &eSupprime un warp"
+  line5: "&6========================"
 perms:
   - marquis: 1
   - comte: 2
