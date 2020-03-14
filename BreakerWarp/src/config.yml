@@ -17,6 +17,7 @@ msg:
   err_type: "&4Vous devez rentrer un nombre !"
   err_lenght: "&4Votre %type% ne peux pas dépasser %l% charactères !"
   err_nowarp: "&4Vous ne posséder pas ce warp !"
+  err_noargs: "&4Vous devez rentrer le nom de votre warp !"
   deleted: "&aVotre warp '&6%warp%&a' à bien été supprimé !"
   create: "&aVotre warp '&6%warp%&a' à bien été créer (&6%price%&a) !"
   title_changed: "&aVotre warp s'appelle désormais &6%warp% &a!"

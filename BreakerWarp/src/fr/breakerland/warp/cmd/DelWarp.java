@@ -26,28 +26,36 @@ public class DelWarp implements CommandExecutor {
 		if(!(sender instanceof Player)) {
 			return false;
 		}
-		Player p = (Player) sender;
-		Integer i = 0;
-		String title = "";
-		while (i<args.length) {
-			if(i== 0) {
-				title = args[i];
-				i++;
-			}
-			else {
-			 title = title+" "+args[i];
-			 i++;
-			}
-		}
-		if(!checkTitle(p.getUniqueId().toString(), title)) {
-			p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("prefix")+" "+main.getConfig().getString("msg.err_nowarp")));
+		else if(args.length==0) {
+			Player p = (Player) sender;
+			p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("prefix")+" "+main.getConfig().getString("msg.err_noargs")));
+			p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("help.line4")));
 			return false;
 		}
 		else {
-			delWarp(p.getUniqueId().toString(), title);
-			p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("prefix")+" "+main.getConfig().getString("msg.deleted").replace("%warp%", title)));
-		}
+			Player p = (Player) sender;
+			Integer i = 0;
+			String title = "";
+			while (i<args.length) {
+				if(i== 0) {
+					title = args[i];
+					i++;
+				}
+				else {
+				 title = title+" "+args[i];
+				 i++;
+				}
+			}
+			if(!checkTitle(p.getUniqueId().toString(), title)) {
+				p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("prefix")+" "+main.getConfig().getString("msg.err_nowarp")));
+				return false;
+			}
+			else {
+				delWarp(p.getUniqueId().toString(), title);
+				p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("prefix")+" "+main.getConfig().getString("msg.deleted").replace("%warp%", title)));
+			}
 		return false;
+		}
 	}
 
 	public boolean checkTitle(String uuid, String title) {
@@ -68,6 +76,6 @@ public class DelWarp implements CommandExecutor {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-		
+	
 	}
 }
