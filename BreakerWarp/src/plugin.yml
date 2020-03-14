@@ -1,0 +1,15 @@
+name: BreakerWarp
+version: 1.0
+author: AzodFR
+main: fr.breakerland.warp.BreakerWarp
+api-version: 1.15
+depends: [Vault]
+commands:
+  bwarp:
+    description: Open the Warp GUI
+  setbwarp:
+    description: Set your Warp
+  delbwarp:
+    description: Delete your Warp
+  editbwarp:
+    description: Edit your Warps
