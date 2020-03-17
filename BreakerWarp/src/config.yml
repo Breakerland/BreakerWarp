@@ -22,6 +22,7 @@ msg:
   create: "&aVotre warp '&6%warp%&a' à bien été créer (&6%price%&a) !"
   title_changed: "&aVotre warp s'appelle désormais &6%warp% &a!"
   desc_changed: "&aLa description de votre warp a bien été modifié !"
+  pass_changed: "&aLe mot de passe de votre warp a bien été modifié !"
   item_changed: "&aL'item de votre warp a bien été modifié !"
   price_changed: "&aLe prix de votre warp a bien été modifié !"
   howto: "&8Veuillez écrire dans le chat pour modifier &6%type% &8 de votre warp"
@@ -31,16 +32,77 @@ msg:
   paid: "&aVous avez été débité de %price%"
   received: "&aVous venez de recevoir %price% grâce à votre warp"
   err_max_price: "&4Le prix maximal est de %price%"
+  err_noeditablewarp: "&4Vous n'avez pas de warp a modifié !"
+  wrong_pass: "&4*BIIIIP* Mauvais mot de passe !"
+  password: "&6Veuillez rentrer le mot de passe de ce warp !"
+  deleted_pass: "&6Le mot de passe de votre warp a bien été modifié"
+  cate_changed: "&aLa catégorie de votre warp a bien été modifié !"
+  noperm: "&4Vous n'avez pas la permission pour executer cette commande !"
+  reload: "&aLa configuration a été reload !"
 items:
-  tag: "&6Modifier le nom"
-  nugget: "&dModifier le prix"
-  sign: "&aModifier la description"
-  frame: "&bModifier l'item"
-  wool_on: "&aActiver le warp"
-  wool_off: "&cDésactiver le warp"
-  composter: "&4Supprimer le warp" 
-  validate: "&aSuppression du warp"
-  refuse: "&4Annuler"
+  #Edit name
+  name: 
+    material: NAME_TAG
+    title: "&6Modifier le nom"
+    place: 20
+  #Edit price
+  price:
+    material: GOLD_NUGGET
+    title: "&dModifier le prix"
+    place: 22
+  #Edit description
+  description:
+    material: OAK_SIGN
+    title: "&aModifier la description"
+    place: 24
+  #Edit icon
+  icon:
+    material: ITEM_FRAME
+    title: "&bModifier l'item"
+    place: 38
+ #Edit on/off
+  i_on:
+    material: GREEN_WOOL
+    title: "&aActiver le warp"
+  i_off:
+    material: RED_WOOL
+    title: "&cDésactiver le warp"
+  onoff_place: 42
+  #Edit delete
+  delete:
+    material: COMPOSTER
+    title: "&4Supprimer le warp" 
+    place: 40
+    options:
+      option1:
+        material: GREEN_STAINED_GLASS_PANE
+        title: "&aSuppression du warp"
+      option2:
+        material: RED_STAINED_GLASS_PANE
+        title: "&4Annuler"
+  #Edit password
+  password:
+    material: TRIPWIRE_HOOK
+    title: "&2Modifier le mot de passe"
+    place: 30
+    options:
+      option1:
+        material: WRITABLE_BOOK
+        title: "&aCliquez pour modifier le mot de passe"
+      option2:
+        material: BARRIER
+        title: "&4Cliquez pour supprimer le mot de passe"
+  #Edit categorie
+  categorie:
+    material: LECTERN
+    title: "&eChanger de catégorie"
+    place: 32
+  #Clear categorie title
+  clear: "&dTout afficher"
+  #Edit option1/option2 place
+  option1_place: 29
+  option2_place: 33
+#Edit the lore of each Warp item
 lore:
   description: "&fDescription:"
   owner: "&fPropriétaire: "
@@ -48,21 +110,46 @@ lore:
   price: "&fPrix:"
   ison: "&aActivé"
   isoff: "&4Désactivé"
+  isprotected: "&6Protégé"
+  max_name: "32 charactères maximum !"
+  max_desc: "128 charactères maximum !"
+  max_price: "Prix maximum: %price%"
+  arrow: "&8Page Suivante"
+#Edit GUI Title
 gui:
   list: "Liste des warps"
   personnal: "Liste de vos warps"
   edit: "Modifier votre warp"
+#Edit the item of the Editor GUI (tutorial for changing icon item)
 tuto_edit:
+  material: BOOK
   title: "               §aTUTORIEL:"
   line1: "Cliquez sur un de vos item dans votre inventaire"
   line2: "          pour modifier l'item de votre warp"
+  place: 13
+#Edit the bwarp help message
 help:
   line1: "&6=========&cWARP&6========="
   line2: "&7/bwarp : &eOuvre le menu des warps"
   line3: "&7/setbwarp <nom> : &eCréer un nouveau warp"
   line4: "&7/delbwarp <nom> : &eSupprime un warp"
   line5: "&6========================"
+#Edit the number of avaible warp for specific permission group.x
 perms:
   - marquis: 1
   - comte: 2
   - prince: 3
+#Create categories for the Warps List GUI
+categories:
+  c_1:
+    name: "Villes"
+    material: OAK_DOOR
+    position: 2
+  c_2:
+    name: "Fermes"
+    material: DIAMOND_HOE
+    position: 4
+  c_3:
+    name: "Shops"
+    material: CHEST
+    position: 6

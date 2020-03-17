@@ -28,8 +28,10 @@ import fr.breakerland.warp.BreakerWarp;
 public class EditGUI implements CommandExecutor, Listener  {
 
 	BreakerWarp main;
-	public EditGUI(BreakerWarp breakerWarp) {
+	OpenGUI plugin;
+	public EditGUI(BreakerWarp breakerWarp, OpenGUI openGUI) {
 		this.main = breakerWarp;
+		this.plugin = openGUI;
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -39,6 +41,10 @@ public class EditGUI implements CommandExecutor, Listener  {
 		else {
 	
 			Player p = (Player) sender;
+			if(!haveWarp(p.getUniqueId().toString())) {
+				p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("prefix")+" "+main.getConfig().getString("msg.err_noeditablewarp")));
+				return false;
+			}
 			Inventory editGUI = Bukkit.createInventory(null, 9, ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("gui.personnal")));
 			main.playerEdit.add(p.getUniqueId().toString());
 			ItemStack item =new ItemStack(Material.WHITE_STAINED_GLASS_PANE,1);
@@ -88,96 +94,213 @@ public class EditGUI implements CommandExecutor, Listener  {
 		if(!main.playerSpec.containsKey(p.getUniqueId().toString())) {
 			return;
 		}
+		if(e.getCurrentItem() == null) {
+			e.setCancelled(true);
+			return;
+		}
 		if(e.getRawSlot()>53) {
 			e.setCancelled(true);
 			return;
 		}
-		else if(e.getRawSlot()==20) {
-			e.setCancelled(true);			
-			main.editTitle.put(p.getUniqueId().toString(), main.playerSpec.get(p.getUniqueId().toString()));
-			p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("prefix")+" "+main.getConfig().getString("msg.howto").replace("%type%", "le titre")));
-			p.closeInventory();
-		}
-		else if(e.getRawSlot()==22) {
-			e.setCancelled(true);			
-			main.editPrice.put(p.getUniqueId().toString(), main.playerSpec.get(p.getUniqueId().toString()));
-			p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("prefix")+" "+main.getConfig().getString("msg.howto").replace("%type%", "le prix")));
-			p.closeInventory();
-		}
-		else if(e.getRawSlot()==24) {
-			e.setCancelled(true);			
-			main.editDesc.put(p.getUniqueId().toString(), main.playerSpec.get(p.getUniqueId().toString()));
-			p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("prefix")+" "+main.getConfig().getString("msg.howto").replace("%type%", "la description")));
-			p.closeInventory();
-		}
-		else if(e.getRawSlot()==38) {
-			e.setCancelled(true);
-			Integer warpid = main.playerSpec.get(p.getUniqueId().toString());
-			Inventory itemGUI = Bukkit.createInventory(null, 27, ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("gui.edit")));
-			ItemStack help = new ItemStack(Material.BOOK,1);
-			ItemMeta helpmeta = help.getItemMeta();
-			helpmeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("tuto_edit.title")));
-			List<String> lore = new ArrayList<String>();
-			lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("tuto_edit.line1")));
-			lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("tuto_edit.line2")));
-			helpmeta.setLore(lore);
-			help.setItemMeta(helpmeta);
-			itemGUI.setItem(13, help);
-			p.openInventory(itemGUI);
-			main.editItem.put(p.getUniqueId().toString(), warpid);
-			}
-		else if(e.getRawSlot()==42) {
-			e.setCancelled(true);
-			if(e.getCurrentItem().getType().equals(Material.RED_WOOL)) {
-				changeState(p.getUniqueId().toString(), main.playerSpec.get(p.getUniqueId().toString()), 0);
-				ItemStack greenwool = new ItemStack(Material.GREEN_WOOL,1);
-				ItemMeta metagreen = greenwool.getItemMeta();
-				metagreen.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.wool_on")));
-				greenwool.setItemMeta(metagreen);
-				e.getInventory().setItem(42, greenwool);
-			}
-			else if(e.getCurrentItem().getType().equals(Material.GREEN_WOOL)) {
-				changeState(p.getUniqueId().toString(), main.playerSpec.get(p.getUniqueId().toString()), 1);
-				ItemStack redwool = new ItemStack(Material.RED_WOOL,1);
-				ItemMeta metared = redwool.getItemMeta();
-				metared.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.wool_off")));
-				redwool.setItemMeta(metared);
-				e.getInventory().setItem(42, redwool);
-			}
-		}
-		else if(e.getRawSlot()==40) {
-			ItemStack icon = e.getInventory().getItem(4);
-			ItemStack glass = e.getInventory().getItem(9);
-			Inventory delInv = e.getInventory();
-			delInv.clear();
-			delInv.setItem(4, icon);
-			Integer i = 9;
-			while(i<18) {
-				delInv.setItem(i, glass);
-				i++;
-			}
-			ItemStack validate = new ItemStack(Material.GREEN_STAINED_GLASS_PANE, 1);
-			ItemMeta valmeta = validate.getItemMeta();
-			valmeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.validate")));
-			validate.setItemMeta(valmeta);
-			ItemStack refuse = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
-			ItemMeta refmeta = refuse.getItemMeta();
-			refmeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.refuse")));
-			refuse.setItemMeta(refmeta);
-			delInv.setItem(29, validate);
-			delInv.setItem(33, refuse);
+		else if(e.getRawSlot()==main.getConfig().getInt("items.name.place")) {
+			
+				if(e.getCurrentItem().getType().equals(Material.getMaterial(main.getConfig().getString("items.name.material")))) {
+					e.setCancelled(true);			
+					main.editTitle.put(p.getUniqueId().toString(), main.playerSpec.get(p.getUniqueId().toString()));
+					p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("prefix")+" "+main.getConfig().getString("msg.howto").replace("%type%", "le titre")));
+					p.closeInventory();
+				}
 			
 		}
-		else if(e.getRawSlot() == 33) {
-			String title = e.getInventory().getItem(4).getItemMeta().getDisplayName();
-			Inventory specGUI = Bukkit.createInventory(null, 54, ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("edit")));
-			getSpecWarp(specGUI, p.getUniqueId().toString(), title);
-			p.openInventory(specGUI);
-			main.playerSpec.put(p.getUniqueId().toString(), getWarpId(p.getUniqueId().toString(), title));
+		else if(e.getRawSlot()==main.getConfig().getInt("items.price.place")) {
+			
+				if(e.getCurrentItem().getType().equals(Material.getMaterial(main.getConfig().getString("items.price.material")))) {
+					e.setCancelled(true);			
+					main.editPrice.put(p.getUniqueId().toString(), main.playerSpec.get(p.getUniqueId().toString()));
+					p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("prefix")+" "+main.getConfig().getString("msg.howto").replace("%type%", "le prix")));
+					p.closeInventory();
+				}
+			
 		}
-		else if(e.getRawSlot()==29) {
-			p.closeInventory();
-			p.performCommand("delbwarp "+e.getInventory().getItem(4).getItemMeta().getDisplayName());
+		else if(e.getRawSlot()==main.getConfig().getInt("items.description.place")) {
+			
+				if(e.getCurrentItem().getType().equals(Material.getMaterial(main.getConfig().getString("items.description.material")))) {
+				e.setCancelled(true);			
+				main.editDesc.put(p.getUniqueId().toString(), main.playerSpec.get(p.getUniqueId().toString()));
+				p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("prefix")+" "+main.getConfig().getString("msg.howto").replace("%type%", "la description")));
+				p.closeInventory();
+				}
+			
+		}
+		else if(e.getRawSlot()==main.getConfig().getInt("items.password.place")) {
+			
+				if(e.getCurrentItem().getType().equals(Material.getMaterial(main.getConfig().getString("items.password.material")))) {
+					ItemStack icon = e.getInventory().getItem(4);
+					ItemStack glass = e.getInventory().getItem(9);
+					Inventory delInv = e.getInventory();
+					delInv.clear();
+					delInv.setItem(4, icon);
+					Integer i = 9;
+					while(i<18) {
+						delInv.setItem(i, glass);
+						i++;
+					}
+					ItemStack validate = new ItemStack(Material.getMaterial(main.getConfig().getString("items.password.options.option1.material")));
+					ItemMeta valmeta = validate.getItemMeta();
+					valmeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.password.options.option1.title")));
+					validate.setItemMeta(valmeta);
+					ItemStack delete = new ItemStack(Material.getMaterial(main.getConfig().getString("items.password.options.option2.material")));
+					ItemMeta delmeta = delete.getItemMeta();
+					delmeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.password.options.option2.title")));
+					delete.setItemMeta(delmeta);
+					delInv.setItem(main.getConfig().getInt("items.option1_place"), validate);
+					delInv.setItem(main.getConfig().getInt("items.option2_place"), delete);
+				}
+			
+		}
+		else if(e.getRawSlot()==main.getConfig().getInt("items.icon.place")) {
+			
+				if(e.getCurrentItem().getType().equals(Material.getMaterial(main.getConfig().getString("items.icon.material")))) {
+					e.setCancelled(true);
+					Integer warpid = main.playerSpec.get(p.getUniqueId().toString());
+					Inventory itemGUI = Bukkit.createInventory(null, 27, ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("gui.edit")));
+					ItemStack help = new ItemStack(Material.getMaterial(main.getConfig().getString("tuto_edit.material")));
+					ItemMeta helpmeta = help.getItemMeta();
+					helpmeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("tuto_edit.title")));
+					List<String> lore = new ArrayList<String>();
+					lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("tuto_edit.line1")));
+					lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("tuto_edit.line2")));
+					helpmeta.setLore(lore);
+					help.setItemMeta(helpmeta);
+					itemGUI.setItem(main.getConfig().getInt("tuto_edit.place"), help);
+					p.openInventory(itemGUI);
+					main.editItem.put(p.getUniqueId().toString(), warpid);
+				}
+			
+		}
+		else if(e.getRawSlot()==main.getConfig().getInt("items.onoff_place")) {
+			
+			e.setCancelled(true);
+			if(e.getCurrentItem().getType().equals(Material.getMaterial(main.getConfig().getString("items.i_off.material")))) {
+				changeState(p.getUniqueId().toString(), main.playerSpec.get(p.getUniqueId().toString()), 0);
+				ItemStack greenwool = new ItemStack(Material.getMaterial(main.getConfig().getString("items.i_on.material")));
+				ItemMeta metagreen = greenwool.getItemMeta();
+				metagreen.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.i_on.title")));
+				greenwool.setItemMeta(metagreen);
+				ItemStack icon = e.getInventory().getItem(4);
+				ItemMeta icometa = icon.getItemMeta();
+				List<String> lore = new ArrayList<String>();
+				lore.addAll(icometa.getLore());
+				lore.remove(5);
+				lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.isoff")));
+				icometa.setLore(lore);
+				icon.setItemMeta(icometa);
+				e.getInventory().setItem(main.getConfig().getInt("items.onoff_place"), greenwool);
+				e.getInventory().setItem(4, icon);
+			}
+			else if(e.getCurrentItem().getType().equals(Material.getMaterial(main.getConfig().getString("items.i_on.material")))) {
+				changeState(p.getUniqueId().toString(), main.playerSpec.get(p.getUniqueId().toString()), 1);
+				ItemStack redwool = new ItemStack(Material.getMaterial(main.getConfig().getString("items.i_off.material")));
+				ItemMeta metared = redwool.getItemMeta();
+				metared.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.i_off.title")));
+				redwool.setItemMeta(metared);
+				ItemStack icon = e.getInventory().getItem(4);
+				ItemMeta icometa = icon.getItemMeta();
+				List<String> lore = new ArrayList<String>();
+				lore.addAll(icometa.getLore());
+				lore.remove(5);
+				if(plugin.isProtected(e.getInventory().getItem(4).getItemMeta().getDisplayName())) {
+					lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.isprotected")));
+				}
+				else {
+					lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.ison")));
+				}
+				icometa.setLore(lore);
+				icon.setItemMeta(icometa);
+				e.getInventory().setItem(main.getConfig().getInt("items.onoff_place"), redwool);
+				e.getInventory().setItem(4, icon);
+				}
+			
+		}
+		else if(e.getRawSlot()==main.getConfig().getInt("items.delete.place")) {
+			
+				if(e.getCurrentItem().getType().equals(Material.getMaterial(main.getConfig().getString("items.delete.material")))) {
+					ItemStack icon = e.getInventory().getItem(4);
+					ItemStack glass = e.getInventory().getItem(9);
+					Inventory delInv = e.getInventory();
+					delInv.clear();
+					delInv.setItem(4, icon);
+					Integer i = 9;
+					while(i<18) {
+						delInv.setItem(i, glass);
+						i++;
+					}
+					ItemStack validate = new ItemStack(Material.getMaterial(main.getConfig().getString("items.delete.options.option1.material")));
+					ItemMeta valmeta = validate.getItemMeta();
+					valmeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.delete.options.option1.title")));
+					validate.setItemMeta(valmeta);
+					ItemStack refuse = new ItemStack(Material.getMaterial(main.getConfig().getString("items.delete.options.option2.material")), 1);
+					ItemMeta refmeta = refuse.getItemMeta();
+					refmeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.delete.options.option2.title")));
+					refuse.setItemMeta(refmeta);
+					delInv.setItem(main.getConfig().getInt("items.option1_place"), validate);
+					delInv.setItem(main.getConfig().getInt("items.option2_place"), refuse);
+				}
+			
+		}
+		else if(e.getRawSlot() == main.getConfig().getInt("items.option2_place")) {
+			
+				if(e.getCurrentItem().getType().equals(Material.getMaterial(main.getConfig().getString("items.delete.options.option2.material")))) {
+					String title = e.getInventory().getItem(4).getItemMeta().getDisplayName();
+					Inventory specGUI = Bukkit.createInventory(null, 54, ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("gui.edit")));
+					getSpecWarp(specGUI, p.getUniqueId().toString(), title);
+					p.openInventory(specGUI);
+					main.playerSpec.put(p.getUniqueId().toString(), getWarpId(p.getUniqueId().toString(), title));
+				}
+				else if(e.getCurrentItem().getType().equals(Material.getMaterial(main.getConfig().getString("items.password.options.option2.material")))) {
+					deletePassword(p.getUniqueId().toString(),main.playerSpec.get(p.getUniqueId().toString()));
+					p.closeInventory();
+					p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("prefix")+" "+main.getConfig().getString("msg.deleted_pass")));
+				}
+			
+			
+		}
+		else if(e.getRawSlot()==main.getConfig().getInt("items.option1_place")) {
+			
+				if(e.getCurrentItem().getType().equals(Material.getMaterial(main.getConfig().getString("items.delete.options.option1.material")))) {
+					p.closeInventory();
+					p.performCommand("delbwarp "+e.getInventory().getItem(4).getItemMeta().getDisplayName());
+				}
+				else if(e.getCurrentItem().getType().equals(Material.getMaterial(main.getConfig().getString("items.password.options.option1.material")))) {
+					e.setCancelled(true);			
+					main.editPass.put(p.getUniqueId().toString(), main.playerSpec.get(p.getUniqueId().toString()));
+					p.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("prefix")+" "+main.getConfig().getString("msg.howto").replace("%type%", "le mot de passe")));
+					p.closeInventory();
+				}
+			
+			
+		}
+		else if(e.getRawSlot()==main.getConfig().getInt("items.categorie.place")) {
+			
+				if(e.getCurrentItem().getType().equals(Material.getMaterial(main.getConfig().getString("items.categorie.material")))) {
+					e.setCancelled(true);
+					Integer warpid = main.playerSpec.get(p.getUniqueId().toString());
+					Inventory cateGUI = Bukkit.createInventory(null, 27, ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("gui.edit")));
+					Integer iterator = 1;
+					while(main.getConfig().getString("categories.c_"+iterator+".name") != null) {
+						ItemStack categorie = new ItemStack(Material.getMaterial(main.getConfig().getString("categories.c_"+iterator+".material")));
+						ItemMeta catmeta = categorie.getItemMeta();
+						catmeta.setDisplayName(ChatColor.WHITE+ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("categories.c_"+iterator+".name")));
+						categorie.setItemMeta(catmeta);
+						Integer place = main.getConfig().getInt("categories.c_"+iterator+".position")+9;
+						cateGUI.setItem(place, categorie);
+						
+						iterator++;
+					}
+					p.openInventory(cateGUI);
+					main.editCate.put(p.getUniqueId().toString(), warpid);
+				}
+			
 		}
 		else {
 			e.setCancelled(true);
@@ -221,7 +344,13 @@ public class EditGUI implements CommandExecutor, Listener  {
 				lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.price"))+" "+results.getDouble("price")+main.getConfig().getString("type"));
 				lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.visit"))+" "+results.getInt("visit"));
 				if(results.getBoolean("activate")) {
-					lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.ison")));
+					if(results.getString("password")==null) {
+						lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.ison")));
+					}
+					else {
+						lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.isprotected")));
+					}
+					
 				}
 				else {
 					lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.isoff")));
@@ -295,7 +424,13 @@ public class EditGUI implements CommandExecutor, Listener  {
 				lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.price"))+" "+results.getDouble("price")+main.getConfig().getString("type"));
 				lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.visit"))+" "+results.getInt("visit"));
 				if(results.getBoolean("activate")) {
-					lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.ison")));
+					if(results.getString("password")==null) {
+						lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.ison")));
+					}
+					else {
+						lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.isprotected")));
+					}
+					
 				}
 				else {
 					lore.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.isoff")));
@@ -305,57 +440,79 @@ public class EditGUI implements CommandExecutor, Listener  {
 				i.setItem(4, item);
 				
 				///Edit name
-				ItemStack tag = new ItemStack(Material.NAME_TAG);
+				ItemStack tag = new ItemStack(Material.getMaterial(main.getConfig().getString("items.name.material")));
 				ItemMeta tagmeta = tag.getItemMeta();
-				tagmeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.tag")));
+				tagmeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.name.title")));
+				List<String> loretag = new ArrayList<String>();
+				loretag.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.max_name")));
+				tagmeta.setLore(loretag);
 				tag.setItemMeta(tagmeta);
-				i.setItem(20, tag);
+				i.setItem(main.getConfig().getInt("items.name.place"), tag);
 				
 				///Edit price
-				ItemStack nug = new ItemStack(Material.GOLD_NUGGET);
+				ItemStack nug = new ItemStack(Material.getMaterial(main.getConfig().getString("items.price.material")));
 				ItemMeta nugmeta = nug.getItemMeta();
-				nugmeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.nugget")));
+				nugmeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.price.title")));
+				List<String> lorenug = new ArrayList<String>();
+				lorenug.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.max_price").replace("%price%", ""+main.getConfig().getInt("max_price")+main.getConfig().getString("type"))));
+				nugmeta.setLore(lorenug);
 				nug.setItemMeta(nugmeta);
-				i.setItem(22, nug);
+				i.setItem(main.getConfig().getInt("items.price.place"), nug);
 				
 				///Edit description
-				ItemStack sign = new ItemStack(Material.OAK_SIGN);
+				ItemStack sign = new ItemStack(Material.getMaterial(main.getConfig().getString("items.description.material")));
 				ItemMeta signmeta = sign.getItemMeta();
-				signmeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.sign")));
+				signmeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.description.title")));
+				List<String> loresign = new ArrayList<String>();
+				loresign.add(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("lore.max_desc")));
+				signmeta.setLore(loresign);
 				sign.setItemMeta(signmeta);
-				i.setItem(24, sign);
+				i.setItem(main.getConfig().getInt("items.description.place"), sign);
 				
 				///Edit item
-				ItemStack frame = new ItemStack(Material.ITEM_FRAME);
+				ItemStack frame = new ItemStack(Material.getMaterial(main.getConfig().getString("items.icon.material")));
 				ItemMeta frameta = frame.getItemMeta();
-				frameta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.frame")));
+				frameta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.icon.title")));
 				frame.setItemMeta(frameta);
-				i.setItem(38, frame);
+				i.setItem(main.getConfig().getInt("items.icon.place"), frame);
+				
+				///Edit Categorie
+				ItemStack lectern = new ItemStack(Material.getMaterial(main.getConfig().getString("items.categorie.material")));
+				ItemMeta lecmeta = frame.getItemMeta();
+				lecmeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.categorie.title")));
+				lectern.setItemMeta(lecmeta);
+				i.setItem(main.getConfig().getInt("items.categorie.place"), lectern);
 				
 				///Delete item
-				ItemStack bin = new ItemStack(Material.COMPOSTER);
+				ItemStack bin = new ItemStack(Material.getMaterial(main.getConfig().getString("items.delete.material")));
 				ItemMeta binmeta = frame.getItemMeta();
-				binmeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.composter")));
+				binmeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.delete.title")));
 				bin.setItemMeta(binmeta);
-				i.setItem(40, bin);
+				i.setItem(main.getConfig().getInt("items.delete.place"), bin);
 				
+				///Edit password
+				ItemStack key = new ItemStack(Material.getMaterial(main.getConfig().getString("items.password.material")));
+				ItemMeta keymeta = key.getItemMeta();
+				keymeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.password.title")));
+				key.setItemMeta(keymeta);
+				i.setItem(main.getConfig().getInt("items.password.place"), key);
 				///Edit on / off
 				PreparedStatement onoffquery = main.getConnection().prepareStatement("SELECT `activate` FROM `warpdata` WHERE `uuid`='"+uuid+"' AND `title`='"+title+"'");
 				ResultSet rs = onoffquery.executeQuery();
 				if(rs.next()) {
 					if(rs.getBoolean("activate")) {
-						ItemStack redwool = new ItemStack(Material.RED_WOOL,1);
+						ItemStack redwool = new ItemStack(Material.getMaterial(main.getConfig().getString("items.i_off.material")));
 						ItemMeta metared = redwool.getItemMeta();
-						metared.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.wool_off")));
+						metared.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.i_off.title")));
 						redwool.setItemMeta(metared);
-						i.setItem(42, redwool);
+						i.setItem(main.getConfig().getInt("items.onoff_place"), redwool);
 					}
 					else {
-						ItemStack greenwool = new ItemStack(Material.GREEN_WOOL,1);
+						ItemStack greenwool = new ItemStack(Material.getMaterial(main.getConfig().getString("items.i_on.material")));
 						ItemMeta metagreen = greenwool.getItemMeta();
-						metagreen.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.wool_on")));
+						metagreen.setDisplayName(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("items.i_on.title")));
 						greenwool.setItemMeta(metagreen);
-						i.setItem(42, greenwool);
+						i.setItem(main.getConfig().getInt("items.onoff_place"), greenwool);
 					}
 				}
 			}
@@ -371,5 +528,31 @@ public class EditGUI implements CommandExecutor, Listener  {
 		}catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+	public void deletePassword(String uuid, Integer warpid) {
+		try {
+			PreparedStatement statement = main.getConnection().prepareStatement("UPDATE `warpdata` SET `password`=null WHERE `uuid`='"+uuid+"' AND `warpid`='"+warpid+"'");
+			statement.executeUpdate();
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public boolean haveWarp(String uuid) {
+		try {
+			PreparedStatement statement = main.getConnection().prepareStatement("SELECT COUNT(*) FROM `warpdata` WHERE `uuid`='"+uuid+"'");
+			ResultSet result = statement.executeQuery();
+			if(result.next()) {
+				if(result.getInt("COUNT(*)")==0) {
+					return false;
+				}
+				else {
+					return true;
+				}
+			}
+		}catch (SQLException e){
+			e.printStackTrace();
+		}
+		return false;
 	}
 }

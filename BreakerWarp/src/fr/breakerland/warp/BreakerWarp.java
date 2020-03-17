@@ -16,10 +16,13 @@ import fr.breakerland.warp.cmd.DelWarp;
 import fr.breakerland.warp.cmd.EditGUI;
 import fr.breakerland.warp.cmd.OpenGUI;
 import fr.breakerland.warp.cmd.SetWarp;
+import fr.breakerland.warp.listener.EditCategorie;
 import fr.breakerland.warp.listener.EditDesc;
 import fr.breakerland.warp.listener.EditItem;
+import fr.breakerland.warp.listener.EditPass;
 import fr.breakerland.warp.listener.EditPrice;
 import fr.breakerland.warp.listener.EditTitle;
+import fr.breakerland.warp.listener.WaitPass;
 import net.milkbowl.vault.economy.Economy;
 
 public class BreakerWarp extends JavaPlugin {
@@ -32,6 +35,9 @@ public class BreakerWarp extends JavaPlugin {
 	public HashMap<String,Integer>editItem = new HashMap<String,Integer>();
 	public HashMap<String,Integer>editDel = new HashMap<String,Integer>();
 	public HashMap<String,Integer>editPrice = new HashMap<String,Integer>();
+	public HashMap<String,Integer>editPass = new HashMap<String,Integer>();
+	public HashMap<String,Integer>editCate = new HashMap<String,Integer>();
+	public HashMap<String,Integer>waitPass = new HashMap<String,Integer>();
 	public HashMap<String,Integer>grades = new HashMap<String,Integer>();;
 	public Long timeout;
 	
@@ -52,18 +58,22 @@ public class BreakerWarp extends JavaPlugin {
 		setupGrades();
 		mysqlSetup();
 		initTable();	
+		getCategories();
 		OpenGUI instance = new OpenGUI(this);
 		getServer().getPluginManager().registerEvents(instance, this);
 		getCommand("bwarp").setExecutor(instance);
 		getCommand("setbwarp").setExecutor(new SetWarp(this));
 		getCommand("delbwarp").setExecutor(new DelWarp(this));
-		EditGUI editinstance = new EditGUI(this);
+		EditGUI editinstance = new EditGUI(this, instance);
 		getServer().getPluginManager().registerEvents(editinstance, this);
 		getCommand("editbwarp").setExecutor(editinstance);
 		getServer().getPluginManager().registerEvents(new EditTitle(this), this);
 		getServer().getPluginManager().registerEvents(new EditDesc(this), this);
 		getServer().getPluginManager().registerEvents(new EditItem(this), this);
 		getServer().getPluginManager().registerEvents(new EditPrice(this), this);
+		getServer().getPluginManager().registerEvents(new EditPass(this), this);
+		getServer().getPluginManager().registerEvents(new WaitPass(this, instance), this);
+		getServer().getPluginManager().registerEvents(new EditCategorie(this, instance),this);
 	}
 	
 	public Connection getConnection() {
@@ -114,7 +124,9 @@ public class BreakerWarp extends JavaPlugin {
 					+ "`description` VARCHAR(128), "
 					+ "`visit` INT(11) NOT NULL, "
 					+ "`price` DOUBLE NOT NULL, "
+					+ "`categorie` INT(2) NOT NULL, "
 					+ "`activate` BOOLEAN NOT NULL DEFAULT TRUE, "
+					+ "`password` VARCHAR(36), "
 					+ "PRIMARY KEY (`warpid`))");
 			
 		} catch (SQLException e) {
@@ -157,6 +169,14 @@ public class BreakerWarp extends JavaPlugin {
 		}
 		return b;
 	}
-
+	
+	public void getCategories() {
+		Integer i = 1;
+		
+		while(getConfig().getString("categories.c_"+i+".name") != null) {
+			getServer().getConsoleSender().sendMessage(getConfig().getString("categories.c_"+i+".name"));
+			i++;
+		}
+	}
 	
 }

@@ -96,8 +96,8 @@ public class SetWarp implements CommandExecutor {
 	public void createWarp(String uuid,String world, Double x, Double y, Double z, Float yaw, Float pitch, String title, String item) {
 		
 			try (Statement statement = main.getConnection().createStatement()) {
-				statement.executeUpdate("INSERT INTO `warpdata` (uuid,world,x,y,z,yaw,pitch,title,item,price,visit) "
-						+ "VALUES ('"+uuid+"','"+world+"','"+x+"','"+y+"','"+z+"','"+yaw+"','"+pitch+"','"+title+"','"+item+"','0','0')");
+				statement.executeUpdate("INSERT INTO `warpdata` (uuid,world,x,y,z,yaw,pitch,title,item,price,visit,categorie) "
+						+ "VALUES ('"+uuid+"','"+world+"','"+x+"','"+y+"','"+z+"','"+yaw+"','"+pitch+"','"+title+"','"+item+"','0','0','0')");
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
